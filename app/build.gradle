@@ -1,0 +1,108 @@
+plugins {
+    id 'com.android.application'
+}
+
+
+// The old Maven AAR used by v9 is intentionally removed. This project builds
+// the pinned official HevSocks5Tunnel source, with JNI symbols generated for
+// com.birdproxy.v2.nativecore.TProxyService.
+def hevTag = '2.16.0'
+def hevRepo = 'https://github.com/heiher/hev-socks5-tunnel.git'
+def hevDir = file('src/main/jni/hev')
+
+def ensureHevCore = {
+    if (new File(hevDir, 'Android.mk').isFile()) return
+    logger.lifecycle("Fetching official HevSocks5Tunnel ${hevTag} native source...")
+    delete(hevDir)
+    hevDir.parentFile.mkdirs()
+    try {
+        def result = exec {
+            commandLine 'git', 'clone', '--depth', '1', '--branch', hevTag,
+                    '--recursive', '--shallow-submodules', hevRepo, hevDir.absolutePath
+            ignoreExitValue true
+        }
+        if (result.exitValue != 0 || !new File(hevDir, 'Android.mk').isFile()) {
+            throw new GradleException('Git clone did not produce a complete native source tree.')
+        }
+    } catch (Exception error) {
+        throw new GradleException('Could not fetch official Hev native core. Install Git and run FETCH_NATIVE_CORE.sh/FETCH_NATIVE_CORE.bat, then Sync again.', error)
+    }
+}
+
+// Android Studio may configure the native model during Sync before build tasks
+// run, so fetch the pinned source during configuration on the first Sync.
+ensureHevCore()
+
+tasks.register('fetchHevCore') {
+    group = 'birdproxy'
+    description = "Fetch official HevSocks5Tunnel ${hevTag} with all submodules"
+    outputs.dir(hevDir)
+    doLast {
+        ensureHevCore()
+        logger.lifecycle("Hev native core ready: ${hevDir}")
+    }
+}
+
+android {
+    namespace 'com.birdproxy.v2'
+    compileSdk 35
+    ndkVersion '29.0.14206865'
+
+    defaultConfig {
+        applicationId "com.birdproxy.v2"
+        minSdk 24
+        targetSdk 34
+        versionCode 10
+        versionName "10.0"
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
+        externalNativeBuild {
+            ndkBuild {
+                arguments 'APP_CFLAGS+=-DPKGNAME=com/birdproxy/v2/nativecore -DCLSNAME=TProxyService -ffile-prefix-map=' + rootDir + '=.'
+                arguments 'APP_LDFLAGS+=-Wl,--build-id=none'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file('src/main/jni/Android.mk')
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+}
+
+// Android Gradle Plugin creates native configuration tasks lazily. Every task
+// that can parse/build Android.mk must wait until the pinned source exists.
+tasks.configureEach { task ->
+    if (task.name == 'preBuild' || task.name.toLowerCase().contains('ndkbuild')) {
+        task.dependsOn(tasks.named('fetchHevCore'))
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.preference:preference:1.2.1'
+}

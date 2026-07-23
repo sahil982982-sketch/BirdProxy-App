@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bird Proxy</string>
+    <string name="settings_title">Proxy Settings</string>
+    <string name="app_pick_title">Select Apps</string>
+
+    <!-- Main screen -->
+    <string name="vpn_status_disconnected">VPN Disconnected</string>
+    <string name="vpn_status_connected">VPN Connected</string>
+    <string name="vpn_status_connecting">Connecting…</string>
+    <string name="vpn_status_blocked">Leak Protection Active</string>
+    <string name="start_vpn">Start VPN</string>
+    <string name="stop_vpn">Stop VPN</string>
+    <string name="settings_button">Settings</string>
+    <string name="select_apps">Select Apps</string>
+
+    <!-- Settings -->
+    <string name="server_label">SOCKS5 Server</string>
+    <string name="server_hint">e.g. 192.168.1.100</string>
+    <string name="port_label">Port</string>
+    <string name="port_hint">e.g. 1080</string>
+    <string name="username_label">Username (required for authenticated proxies)</string>
+    <string name="username_hint">Username</string>
+    <string name="password_label">Password (required for authenticated proxies)</string>
+    <string name="password_hint">Password</string>
+    <string name="save_settings">Save &amp; Apply</string>
+    <string name="settings_saved">Settings saved successfully</string>
+    <string name="settings_save_failed">Failed to save settings</string>
+    <string name="proxy_mode_label">Proxy Mode</string>
+    <string name="proxy_mode_all">All Apps</string>
+    <string name="proxy_mode_selected">Selected Apps Only</string>
+    <string name="leak_protection_note">While Connected, included apps capture IPv4, IPv6 and mapped DNS through the SOCKS5 tunnel. If startup fails, Bird Proxy stops the VPN and shows an error instead of showing a fake Connected state.</string>
+
+    <!-- App Pick -->
+    <string name="save_apps">Save Selection</string>
+    <string name="no_apps">No apps found</string>
+    <string name="search_hint">Search apps…</string>
+    <string name="apps_saved">App selection saved</string>
+    <string name="system_apps">System Apps</string>
+    <string name="user_apps">User Apps</string>
+
+    <!-- Notifications -->
+    <string name="channel_vpn">VPN Service</string>
+    <string name="notification_vpn_running">Bird Proxy VPN is running</string>
+    <string name="notification_vpn_connecting">Bird Proxy is connecting…</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="cancel_connection">Cancel</string>
+</resources>
